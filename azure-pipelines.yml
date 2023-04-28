@@ -1,0 +1,42 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/Carewell.API*.csproj'
+    feedsToUse: 'config'
+    nugetConfigPath: './nuget.config'
+  displayName: 'Restore Nuget Packages'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/Carewell.API*.csproj'
+    arguments: '--no-restore'
+  displayName: 'Build projects'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '**/Carewell.API*.csproj'
+    arguments: '--configuration Release --no-restore -o out'
+    zipAfterPublish: false
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: './out'
+    ArtifactName: 'Carewell.API'
+    publishLocation: 'Container'
+
+

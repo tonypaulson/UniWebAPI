@@ -1,0 +1,17 @@
+# This is a sample build configuration for .NET Core.
+# Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: mcr.microsoft.com/dotnet/core/sdk:3.0
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - dotnetcore
+        script: # Modify the comma`nds below to build your repository.
+          - export PROJECT_NAME=CWL.VirtualCare.API
+          - dotnet restore
+          - dotnet build $PROJECT_NAME
+          - git push https://heroku:fca5f1d8-3f06-46c9-b996-d8c84fa6d5fe@git.heroku.com/cwldevapi.git HEAD:master

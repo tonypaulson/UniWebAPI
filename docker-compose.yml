@@ -1,0 +1,37 @@
+version: '3.7'
+services:
+    mysql.virtualcare.com:
+        image: mysql:8.0.20
+        container_name: mysql.virtualcare.com
+        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_DATABASE: ${DB_NAME}
+            MYSQL_USER: ${DB_USER}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: carewell123
+        volumes:
+            - virtualcare-data:/var/lib/mysql
+
+    virtualcare.com:
+        container_name: virtualcare.com
+        restart: always
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "4480:80"
+        environment:
+            CWL_DB_CONNECTION: ${DB_CONNECTION}
+            CWL_DB_HOST: ${DB_HOST}
+            CWL_DB_NAME: ${DB_NAME}
+            CWL_DB_USER: ${DB_USER}
+            CWL_DB_PASSWORD: ${DB_PASSWORD}
+            CWL_DB_PORT: ${DB_PORT}
+            WAIT_HOSTS: mysql.virtualcare.com:3306
+        depends_on:
+            - mysql.virtualcare.com
+
+volumes:
+    virtualcare-data:
