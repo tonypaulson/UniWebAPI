@@ -25,6 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddTransient<IAdminDataServices,AdminDataServices>();
           
             services.AddSingleton<IAppConfiguration, AwsConfiguration>();
+
+            services.AddTransient<IUserDataService,UserDataServices>();
             
 
         }

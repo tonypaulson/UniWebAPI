@@ -217,5 +217,27 @@ namespace UniWeb.API.Controllers
             }
         }
 
+
+        [HttpGet("GetAllUsers")]
+        public IActionResult GetAllUsers()
+        {
+            try
+            {
+                var results = _service.GetAllUsers();
+                ResponseDto<List<UserRegisterDto>> response = new ResponseDto<List<UserRegisterDto>>
+                {
+                    Status = Enums.ResponseStatus.Success,
+                    Data = results,
+                };
+
+                return StatusCode((int)HttpStatusCode.OK,response);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Error while getting all users");
+                return StatusCode(500);
+            }
+        }
+
     }
 }

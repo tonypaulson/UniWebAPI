@@ -18,6 +18,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using UniWeb.API.DataServices;
 
 namespace UniWeb.API.Services
 {
@@ -25,7 +26,7 @@ namespace UniWeb.API.Services
     {
         EFDataContext _context = null!;
         private readonly AppSettings _appSettings;
-       
+        private readonly IUserDataService _userDataService;
         private readonly PasswordHaser _hasher;
         private readonly ISharedResource _sharedResource;
         private readonly IConfiguration _configuration;
@@ -39,7 +40,7 @@ namespace UniWeb.API.Services
         public UserService(EFDataContext context,
            
             AppSettings appsettings,
-          
+            IUserDataService userDataService,
             PasswordHaser hasher,
             ISharedResource sharedResource,
             IConfiguration configuration,
@@ -51,7 +52,7 @@ namespace UniWeb.API.Services
             
             _context = context;
             _appSettings = appsettings;
-           
+            _userDataService = userDataService;
             _hasher = hasher;
             _sharedResource = sharedResource;
             _configuration = configuration;
@@ -288,6 +289,21 @@ namespace UniWeb.API.Services
         //}
 
 
+        public List<UserRegisterDto> GetAllUsers()
+        {
+            try
+            {
+                var users = _userDataService.GetUsers();
+                return users;
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
 
 
         #region Private methods
@@ -414,5 +430,6 @@ namespace UniWeb.API.Services
     }
 
     #endregion
+
 }
  
