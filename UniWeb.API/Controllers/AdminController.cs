@@ -21,17 +21,16 @@ namespace UniWeb.API.Controllers
     {
         private ILogger<AdminController> _logger;
        
-        private AdminService _service;
+        private readonly IAdminService _adminService;
         private readonly ISharedResource _sharedResource;
 
-        public AdminController(AdminService service,
+        public AdminController(IAdminService adminService,
             ISharedResource sharedResource,
       
         ILogger<AdminController> logger)
         {
             _logger = logger;
-         
-            _service = service;
+            _adminService = adminService;
             _sharedResource = sharedResource;
         }
 
@@ -65,7 +64,7 @@ namespace UniWeb.API.Controllers
                     return StatusCode(400);
                 }
 
-                var Admin = _service.Create(admin);
+                var Admin = _adminService.Create(admin);
                 //ResponseDto<Admin> response = new ResponseDto<Admin>
                 //{
                 //    Status = Enums.ResponseStatus.Success,
@@ -101,7 +100,7 @@ namespace UniWeb.API.Controllers
                 switch (tokenRequestDto.GrantType)
                 {
                     case "password":
-                        var response = await _service.GenerateNewTokenadmin(tokenRequestDto);
+                        var response = await _adminService.GenerateNewTokenadmin(tokenRequestDto);
                         if (response == null)
                         {
                             return StatusCode((int)HttpStatusCode.InternalServerError, new ResponseDto<string>().HandleException("Incorrect username/password"));
@@ -110,7 +109,7 @@ namespace UniWeb.API.Controllers
                         return StatusCode((int)HttpStatusCode.OK, response);
 
                     case "refresh_token":
-                        var refreshTokenResponse = await _service.RefreshToken(tokenRequestDto);
+                        var refreshTokenResponse = await _adminService.RefreshToken(tokenRequestDto);
                         return StatusCode((int)HttpStatusCode.OK, refreshTokenResponse);
 
                     default:
@@ -154,7 +153,7 @@ namespace UniWeb.API.Controllers
                     return StatusCode(400);
                 }
 
-                var user = _service.ResetPassword(passwordResetDto);
+                var user = _adminService.ResetPassword(passwordResetDto);
                 return Ok(user);
 
 
@@ -165,6 +164,34 @@ namespace UniWeb.API.Controllers
                 return StatusCode(500);
             }
         }
+
+        [HttpPost("checkpassword/{password}")]
+        public IActionResult CheckPassword(string password)
+        {
+            try
+            {
+                var userId = HttpContext.Request.GetUserId();
+                ResponseDto<bool> response = new ResponseDto<bool>
+                {
+
+                    Status = Enums.ResponseStatus.Success,
+                    Data = _adminService.IsPasswordEqual(password, userId)
+
+                };
+                return StatusCode((int)HttpStatusCode.OK,response);  
+            }
+            catch(UniWebBusinessException ex)
+            {
+                _logger.LogError(ex,"$ Error while checking password info.");
+                return this.GetMessageResponse(ex.Message);
+
+            }
+            catch (Exception ex)
+            {
+                return this.GetErrorResponse(_sharedResource.UnknownError);
+            }
+        }
+
         
     }
 }

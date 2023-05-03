@@ -16,16 +16,20 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Duende.IdentityServer.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Amazon.S3.Model;
+using UniWeb.API.DataServices;
+using System.Security.Cryptography;
 
 namespace UniWeb.API.Services
 {
-    public class AdminService
+    public class AdminService:IAdminService
     {
-        public static readonly string CreateError = "Error while trying to create a tenant.";
+        public static readonly string CreateError = "Error while trying to creating Admin.";
         private EFDataContext _context;
         private PasswordHaser _hasher;
         private ILogger<AdminService> _logger;
         private readonly AppSettings _appSettings;
+        private readonly IAdminDataServices _adminDataServices;
         private readonly PlaceService _placeService;
         private readonly MailService _mailService;
         private readonly ISharedResource _sharedResource;
@@ -38,12 +42,14 @@ namespace UniWeb.API.Services
             ConfigurationService configurationService,
             PasswordHaser hasher,
             ILogger<AdminService> logger,
-            AppSettings appSettings)
+            AppSettings appSettings,
+            IAdminDataServices adminDataServices)
         {
             _context = context;
             _hasher = hasher;
             _logger = logger;
             _appSettings = appSettings;
+            _adminDataServices = adminDataServices;
             _placeService = placeService;
             _mailService = mailService;
             _sharedResource = sharedResource;
@@ -74,9 +80,9 @@ namespace UniWeb.API.Services
                             UpdatedDate = DateTime.UtcNow
 
                         };
-                        _context.Admin.Add(admin);
+                        _context.Admin.Add(newadmin);
                         _context.SaveChanges();
-                        return AdminDto.FromAdmin(admin);
+                        return AdminDto.FromAdmin(newadmin);
                     }
                     else
                     {
@@ -306,18 +312,32 @@ namespace UniWeb.API.Services
         //    return true;
         //}
 
-        public User GetAdmin(int tenantId)
-        {
-            var tenantAdmin = _context.TenantAdmins
-            .SingleOrDefault(x => x.TenantId == tenantId);
-            if (null == tenantAdmin)
-            {
-                return null;
-            }
-            var user = _context.Users
-            .SingleOrDefault(x => x.Id == tenantAdmin.UserId);
-            return user;
-        } 
 
+        public string HashPassword(string password)
+        {
+            var hasher = SHA256.Create();
+            var hash = hasher.ComputeHash(Encoding.Default.GetBytes(password));
+            return Convert.ToBase64String(hash);    
+        }
+        
+        bool IAdminService.IsPasswordEqual(string password,int userId)
+        {
+            try
+            {
+                var response = _adminDataServices.GetAdminDetails(userId);
+                if (response.Password.Equals(HashPassword(password)))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;   
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }  
     }
 }

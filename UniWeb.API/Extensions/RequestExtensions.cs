@@ -8,61 +8,7 @@ namespace Microsoft.AspNetCore.Http
     public static class RequestExtensions
     {
         private const string ErrorMessage = "Unable to parse token from header";
-        public static int GetTenantId(this HttpRequest request)
-        {
-            try
-            {
-                var handler = new JwtSecurityTokenHandler();
-                var authHeader = request.Headers["Authorization"];
-
-                if (!authHeader.Any())
-                {
-                    throw new UnauthorizedAccessException(ErrorMessage);
-                }
-
-                var authorization = authHeader[0];
-                if (authorization.StartsWith("Bearer"))
-                {
-                    authHeader = authorization.Replace("Bearer ", "");
-                    var jsonToken = handler.ReadToken(authHeader);
-                    var tokenS = handler.ReadToken(authHeader) as JwtSecurityToken;
-                    var tenantIdString = tokenS.Claims.First(claim => claim.Type == "TenantId").Value;
-                    if (!string.IsNullOrEmpty(tenantIdString))
-                    {
-                        return Convert.ToInt32(tenantIdString);
-                    }
-                    throw new UnauthorizedAccessException(ErrorMessage);
-                }
-                else if (authorization.StartsWith("Basic"))
-                {
-                    var credentialsEncoded = authorization.Replace("Basic ", "");
-                    var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(credentialsEncoded));
-                    var details = credentials.Split(":");
-                    if ((details[0] == "anonymous") && (details[1] == "anonymous"))
-                    {
-                        if (!request.Headers.ContainsKey("TenantId")) 
-                        {
-                            throw new UnauthorizedAccessException("Tenant Id not specificied.");
-                        }
-                        var tenantIdHeader = request.Headers["TenantId"][0];
-                        int tenantId = 0;
-                        if (Int32.TryParse(tenantIdHeader, out tenantId)) 
-                        {
-                            return tenantId;
-                        }
-                    }
-                    throw new UnauthorizedAccessException();
-                }
-                else
-                {
-                    throw new UnauthorizedAccessException();
-                }
-            }
-            catch
-            {
-                throw new UnauthorizedAccessException(ErrorMessage);
-            }
-        }
+       
 
         public static int GetUserId(this HttpRequest request)
         {

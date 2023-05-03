@@ -1,9 +1,10 @@
 ﻿using UniWeb.API.DataContext;
 using UniWeb.API.DTO;
+using UniWeb.API.Entities;
 
 namespace UniWeb.API.DataServices
 {
-    public class AdminDataServices
+    public class AdminDataServices : IAdminDataServices
     {
         private EFDataContext _dataContext;
 
@@ -17,16 +18,26 @@ namespace UniWeb.API.DataServices
         //{
         //    try
         //    {
-
-
-
-
-
         //    }
         //    catch { 
 
 
         //    }
         //}
+
+
+        public Admin GetAdminDetails(int id)
+        {
+            try
+            {
+                return _dataContext.Admin.Where(x => x.Id == id).FirstOrDefault();
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+           
+        }
+
     }
 }

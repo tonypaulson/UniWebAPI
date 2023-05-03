@@ -1,4 +1,5 @@
 ﻿
+using UniWeb.API.DataServices;
 using UniWeb.API.Helpers;
 using UniWeb.API.Services;
 
@@ -17,10 +18,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ConfigurationService>();
         
             services.AddTransient<TimeService>();
-            services.AddTransient<AdminService>();
+            services.AddTransient<IAdminService,AdminService>();
             services.AddTransient<PasswordHaser>();
             services.AddTransient<PlaceService>();
             services.AddTransient<MailService>();
+            services.AddTransient<IAdminDataServices,AdminDataServices>();
           
             services.AddSingleton<IAppConfiguration, AwsConfiguration>();
             
